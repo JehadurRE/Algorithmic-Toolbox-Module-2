@@ -33,73 +33,371 @@ The solutions are implemented in **7 programming languages**: C++, Python, Java,
 ## 🧮 Problems and Solutions
 
 ### 1. 📈 Fibonacci Number
-**Problem**: Compute the nth Fibonacci number efficiently.
+**Problem Statement**: Given an integer n, compute the nth Fibonacci number where F(0) = 0, F(1) = 1, and F(n) = F(n-1) + F(n-2) for n ≥ 2.
 
-**Naive Approach**: O(2^n) recursive solution
-**Optimized Approach**: O(n) dynamic programming with array memoization
+**Input/Output**:
+- Input: Integer n (0 ≤ n ≤ 45)
+- Output: F(n)
+
+**Example**:
+```
+Input: 10
+Output: 55
+```
+
+**Naive Approach**: 
+```cpp
+int fibonacci_naive(int n) {
+    if (n <= 1) return n;
+    return fibonacci_naive(n - 1) + fibonacci_naive(n - 2);
+}
+```
+- **Time Complexity**: O(2^n) - exponential
+- **Problem**: Recomputes same values multiple times
+
+**Optimized Approach**: Dynamic Programming
+```cpp
+long long fibonacci_fast(int n) {
+    if (n <= 1) return n;
+    vector<long long> arr(n + 1);
+    arr[0] = 0; arr[1] = 1;
+    for (int i = 2; i <= n; i++) {
+        arr[i] = arr[i - 1] + arr[i - 2];
+    }
+    return arr[n];
+}
+```
+- **Time Complexity**: O(n)
+- **Space Complexity**: O(n)
+- **Key Insight**: Store previously computed values to avoid recomputation
 
 **Key Files**:
 - `fibonacci.cpp` - C++ implementation with both naive and fast versions
-- `fibonacci.py` - Python implementation with testing framework
+- `fibonacci.py` - Python implementation with testing framework  
 - `Fibonacci.java` - Java implementation with input validation
 
+---
+
 ### 2. 🔢 Last Digit of Fibonacci Number
-**Problem**: Find the last digit of the nth Fibonacci number efficiently.
+**Problem Statement**: Given an integer n, find the last digit of the nth Fibonacci number.
 
-**Optimization**: Use modulo 10 arithmetic to prevent integer overflow
-**Time Complexity**: O(n)
-**Space Complexity**: O(1)
+**Input/Output**:
+- Input: Integer n (0 ≤ n ≤ 10^7)
+- Output: Last digit of F(n)
 
-**Key Insight**: Only track last digits to avoid large number computations.
+**Example**:
+```
+Input: 139
+Output: 1 (because F(139) ends with 1)
+```
+
+**Why This Problem?**: 
+- F(n) grows exponentially and becomes too large to store
+- We only need the last digit, not the entire number
+
+**Optimized Approach**: Modular Arithmetic
+```cpp
+int get_fibonacci_last_digit(int n) {
+    if (n <= 1) return n;
+    int previous = 0, current = 1;
+    for (int i = 0; i < n - 1; ++i) {
+        int tmp_previous = previous;
+        previous = current;
+        current = (tmp_previous + current) % 10;
+    }
+    return current;
+}
+```
+
+**Key Insights**:
+- Apply modulo 10 at each step to prevent overflow
+- Only track last digits throughout computation
+- **Time Complexity**: O(n)
+- **Space Complexity**: O(1)
+
+**Mathematical Property**: (a + b) mod m = ((a mod m) + (b mod m)) mod m
+
+---
 
 ### 3. 🔄 Greatest Common Divisor (GCD)
-**Problem**: Find the greatest common divisor of two integers.
+**Problem Statement**: Given two integers a and b, find their greatest common divisor.
 
-**Naive Approach**: O(min(a,b)) - check all divisors
-**Optimized Approach**: O(log(min(a,b))) - Euclidean algorithm
+**Input/Output**:
+- Input: Two integers a, b (1 ≤ a, b ≤ 2×10^9)
+- Output: GCD(a, b)
 
-**Algorithm**: `gcd(a, b) = gcd(b, a mod b)` with base case `gcd(a, 0) = a`
+**Example**:
+```
+Input: 48 18
+Output: 6
+```
+
+**Naive Approach**: Check All Divisors
+```cpp
+int gcd_naive(int a, int b) {
+    int current_gcd = 1;
+    for (int d = 2; d <= min(a, b); d++) {
+        if (a % d == 0 && b % d == 0) {
+            current_gcd = d;
+        }
+    }
+    return current_gcd;
+}
+```
+- **Time Complexity**: O(min(a,b))
+- **Problem**: Too slow for large numbers
+
+**Optimized Approach**: Euclidean Algorithm
+```cpp
+int gcd_fast(int a, int b) {
+    if (b == 0) return a;
+    return gcd_fast(b, a % b);
+}
+```
+
+**Algorithm Explanation**:
+1. **Base Case**: GCD(a, 0) = a
+2. **Recursive Step**: GCD(a, b) = GCD(b, a mod b)
+3. **Why It Works**: GCD(a, b) = GCD(b, a - kb) for any integer k
+
+**Mathematical Proof**: If d divides both a and b, then d also divides (a mod b).
+
+**Key Properties**:
+- **Time Complexity**: O(log(min(a,b)))
+- **Space Complexity**: O(1) iterative, O(log(min(a,b))) recursive
+- **Improvement**: From linear to logarithmic time
+
+---
 
 ### 4. ➕ Least Common Multiple (LCM)
-**Problem**: Find the least common multiple of two integers.
+**Problem Statement**: Given two integers a and b, find their least common multiple.
 
-**Formula**: `LCM(a, b) = (a / GCD(a, b)) * b`
-**Time Complexity**: O(log(min(a,b))) - depends on GCD computation
+**Input/Output**:
+- Input: Two integers a, b (1 ≤ a, b ≤ 2×10^9)
+- Output: LCM(a, b)
 
-**Key Optimization**: Use integer division to prevent overflow.
+**Example**:
+```
+Input: 6 8
+Output: 24
+```
+
+**Naive Approach**: Check All Multiples
+```cpp
+long long lcm_naive(int a, int b) {
+    for (long l = 1; l <= (long)a * b; ++l) {
+        if (l % a == 0 && l % b == 0) return l;
+    }
+    return (long)a * b;
+}
+```
+- **Time Complexity**: O(a×b)
+- **Problem**: Can be extremely slow
+
+**Optimized Approach**: Mathematical Formula
+```cpp
+long long lcm_fast(int a, int b) {
+    return (long long)(a / gcd(a, b)) * b;
+}
+```
+
+**Mathematical Foundation**:
+- **Formula**: LCM(a, b) × GCD(a, b) = a × b
+- **Derived**: LCM(a, b) = (a × b) / GCD(a, b)
+- **Implementation Note**: Use `(a / gcd(a, b)) * b` to prevent integer overflow
+
+**Key Insights**:
+- **Time Complexity**: O(log(min(a,b))) - same as GCD
+- **Space Complexity**: O(1)
+- **Overflow Prevention**: Divide before multiplying
+
+---
 
 ### 5. 🌀 Fibonacci Number Again (Pisano Period)
-**Problem**: Compute `F(n) mod m` for very large n.
+**Problem Statement**: Given integers n and m, compute F(n) mod m efficiently for very large n.
 
-**Key Concept**: Pisano Period - Fibonacci sequence modulo m is periodic
-**Optimization**: Find period length, then reduce n modulo period length
-**Time Complexity**: O(m²) for finding period, O(n mod period) for computation
+**Input/Output**:
+- Input: Integers n, m (1 ≤ n ≤ 10^18, 2 ≤ m ≤ 10^3)
+- Output: F(n) mod m
+
+**Example**:
+```
+Input: 2015 3
+Output: 1 (because F(2015) mod 3 = 1)
+```
+
+**Challenge**: n can be up to 10^18, making O(n) solutions impossible.
+
+**Key Mathematical Insight**: Pisano Period
+- Fibonacci sequence modulo m is **periodic**
+- Period length is called **Pisano Period** π(m)
+- π(m) ≤ 6m (proven upper bound)
 
 **Algorithm**:
-1. Find Pisano period for modulus m
-2. Reduce n modulo the period
-3. Compute Fibonacci of reduced n
+```cpp
+long long find_pisano_period(long long m) {
+    long long prev = 0, current = 1;
+    for (long long i = 0; i < m * m; i++) {
+        long long temp = current;
+        current = (prev + temp) % m;
+        prev = temp;
+        if (prev == 0 && current == 1) {
+            return i + 1;  // Found period
+        }
+    }
+    return 0;
+}
+
+long long fibonacci_huge_fast(long long n, long long m) {
+    long long period = find_pisano_period(m);
+    n = n % period;  // Reduce problem size
+    // Now compute F(n) mod m normally
+}
+```
+
+**Examples of Pisano Periods**:
+- π(2) = 3: [0,1,1,0,1,1,...]
+- π(3) = 8: [0,1,1,2,0,2,2,1,0,1,1,...]
+- π(10) = 60
+
+**Performance Analysis**:
+- **Period Finding**: O(m²) one-time cost
+- **Query Time**: O(period) ≤ O(6m)
+- **Overall**: Transforms O(n) to O(m²)
+
+---
 
 ### 6. 📊 Last Digit of Sum of Fibonacci Numbers
-**Problem**: Find the last digit of the sum F(0) + F(1) + ... + F(n).
+**Problem Statement**: Find the last digit of the sum F(0) + F(1) + F(2) + ... + F(n).
 
-**Key Insight**: Pisano period for mod 10 is 60
-**Optimization**: Use period reduction and modular arithmetic
-**Time Complexity**: O(1) after period reduction
+**Input/Output**:
+- Input: Integer n (0 ≤ n ≤ 10^18)
+- Output: Last digit of Σ(i=0 to n) F(i)
+
+**Example**:
+```
+Input: 3
+Output: 4 (because F(0)+F(1)+F(2)+F(3) = 0+1+1+2 = 4)
+```
+
+**Naive Approach**: Sum All Fibonacci Numbers
+- **Problem**: For large n, this requires computing huge Fibonacci numbers
+- **Time Complexity**: O(n × time_to_compute_F(n))
+
+**Key Mathematical Insight**: 
+- We only need last digit, so work modulo 10
+- Pisano period for mod 10 is exactly **60**
+- Pattern repeats every 60 Fibonacci numbers
+
+**Optimized Algorithm**:
+```cpp
+int fibonacci_sum_fast(long long n) {
+    n = n % 60;  // Use Pisano period for mod 10
+    if (n <= 1) return n;
+    
+    long long previous = 0, current = 1, sum = 1;
+    for (long long i = 0; i < n - 1; ++i) {
+        long long tmp_previous = previous;
+        previous = current;
+        current = (tmp_previous + current) % 10;
+        sum = (sum + current) % 10;
+    }
+    return sum;
+}
+```
+
+**Why This Works**:
+- Sum of first 60 Fibonacci numbers mod 10 repeats
+- Reduce any n to equivalent position in first 60 terms
+- **Time Complexity**: O(1) after period reduction
+
+---
 
 ### 7. ➗ Last Digit of Partial Sum of Fibonacci Numbers
-**Problem**: Find the last digit of the sum F(from) + F(from+1) + ... + F(to).
+**Problem Statement**: Find the last digit of F(from) + F(from+1) + ... + F(to).
 
-**Approach**: Combine Pisano period optimization with range handling
-**Edge Case**: Handle wraparound when `to < from` after period reduction
-**Time Complexity**: O(period length) = O(60) = O(1)
+**Input/Output**:
+- Input: Integers from, to (0 ≤ from ≤ to ≤ 10^18)
+- Output: Last digit of Σ(i=from to to) F(i)
+
+**Example**:
+```
+Input: 10 200
+Output: Last digit of F(10)+F(11)+...+F(200)
+```
+
+**Approach**: Combine Pisano Period with Range Handling
+```cpp
+long long fibonacci_partial_sum_fast(long long from, long long to) {
+    long long sum = 0, current = 0, next = 1;
+    from = from % 60;  // Reduce using Pisano period
+    to = to % 60;
+    
+    if (to < from) {
+        to += 60;  // Handle wraparound case
+    }
+    
+    for (long long i = 0; i <= to; ++i) {
+        if (i >= from) {
+            sum += current;
+        }
+        long long new_current = next;
+        next = (next + current) % 10;
+        current = new_current;
+    }
+    return sum % 10;
+}
+```
+
+**Critical Edge Case**: When `to < from` after period reduction
+- Example: from = 10, to = 80 becomes from = 10, to = 20 after mod 60
+- But we need to include the wraparound: [10...59] + [0...20]
+- Solution: Add 60 to `to` to handle full period
+
+**Time Complexity**: O(60) = O(1)
+
+---
 
 ### 8. ⏹️ Last Digit of Sum of Squares of Fibonacci Numbers
-**Problem**: Find the last digit of F(0)² + F(1)² + ... + F(n)².
+**Problem Statement**: Find the last digit of F(0)² + F(1)² + F(2)² + ... + F(n)².
 
-**Optimization**: Use Pisano period (60) for mod 10 arithmetic
-**Key Insight**: Square each Fibonacci number modulo 10 before summing
-**Time Complexity**: O(60) = O(1)
+**Input/Output**:
+- Input: Integer n (0 ≤ n ≤ 10^18)
+- Output: Last digit of Σ(i=0 to n) F(i)²
+
+**Example**:
+```
+Input: 7
+Output: 3 (because 0²+1²+1²+2²+3²+5²+8²+13² = 0+1+1+4+9+25+64+169 = 273, last digit is 3)
+```
+
+**Mathematical Insight**: 
+- Same Pisano period (60) applies to sums of squares
+- Square each Fibonacci number modulo 10 before adding
+
+**Optimized Algorithm**:
+```cpp
+int fibonacci_sum_squares_fast(long long n) {
+    n = n % 60;  // Pisano period for mod 10
+    if (n <= 1) return n;
+    
+    long long previous = 0, current = 1, sum = 1;
+    for (long long i = 0; i < n - 1; ++i) {
+        long long tmp_previous = previous;
+        previous = current;
+        current = (tmp_previous + current) % 10;
+        sum += current * current;  // Square the current Fibonacci number
+    }
+    return sum % 10;
+}
+```
+
+**Key Implementation Details**:
+- Compute F(i) mod 10 first, then square it
+- This prevents overflow and maintains correctness
+- **Mathematical Property**: (a²) mod m = ((a mod m)²) mod m
+
+**Performance**: O(60) = O(1) time complexity
 
 ## 🛠️ Algorithms Used
 
